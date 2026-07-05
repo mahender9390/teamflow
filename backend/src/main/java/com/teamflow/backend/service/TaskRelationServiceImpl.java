@@ -9,6 +9,10 @@ import com.teamflow.backend.repository.TaskRepository;
 import com.teamflow.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import com.teamflow.backend.exception.AccessDeniedException;
+import com.teamflow.backend.exception.DuplicateResourceException;
+import com.teamflow.backend.exception.InvalidRequestException;
+import com.teamflow.backend.exception.ResourceNotFoundException;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -26,28 +30,28 @@ public class TaskRelationServiceImpl implements TaskRelationService {
     public TaskRelationResponse createRelation(CreateTaskRelationRequest request, String userEmail) {
 
         userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         if (request.getPredecessorTaskId().equals(request.getSuccessorTaskId())) {
-            throw new RuntimeException("A task cannot depend on itself");
+            throw new InvalidRequestException("A task cannot depend on itself");
         }
 
         Task predecessorTask = taskRepository.findById(request.getPredecessorTaskId())
-                .orElseThrow(() -> new RuntimeException("Predecessor task not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Predecessor task not found"));
 
         Task successorTask = taskRepository.findById(request.getSuccessorTaskId())
-                .orElseThrow(() -> new RuntimeException("Successor task not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Successor task not found"));
 
         if (!predecessorTask.getCreatedBy().getEmail().equals(userEmail)
                 || !successorTask.getCreatedBy().getEmail().equals(userEmail)) {
 
-            throw new RuntimeException("You can only create relations between your own tasks");
+            throw new AccessDeniedException("You can only create relations between your own tasks");
         }
 
         taskRelationRepository.findByPredecessorTaskAndSuccessorTaskAndRelationType(
                 predecessorTask, successorTask, request.getRelationType())
                 .ifPresent(existing -> {
-                    throw new RuntimeException("This task relation already exists");
+                    throw new DuplicateResourceException("This task relation already exists");
                 });
 
         TaskRelation relation = TaskRelation.builder()
@@ -65,7 +69,7 @@ public class TaskRelationServiceImpl implements TaskRelationService {
     public List<TaskRelationResponse> getRelationsForTask(Long taskId) {
 
         Task task = taskRepository.findById(taskId)
-                .orElseThrow(() -> new RuntimeException("Task not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Task not found"));
 
         return Stream.concat(
                 taskRelationRepository.findByPredecessorTask(task).stream(),
@@ -78,13 +82,13 @@ public class TaskRelationServiceImpl implements TaskRelationService {
     public void deleteRelation(Long id, String userEmail) {
 
         userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         TaskRelation relation = taskRelationRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Task relation not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Task relation not found"));
 
         if (!relation.getPredecessorTask().getCreatedBy().getEmail().equals(userEmail)) {
-            throw new RuntimeException("Access denied");
+            throw new AccessDeniedException("Access denied");
         }
 
         taskRelationRepository.delete(relation);

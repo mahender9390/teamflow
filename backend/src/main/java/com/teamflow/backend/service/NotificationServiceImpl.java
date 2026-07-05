@@ -8,6 +8,8 @@ import com.teamflow.backend.repository.NotificationRepository;
 import com.teamflow.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import com.teamflow.backend.exception.AccessDeniedException;
+import com.teamflow.backend.exception.ResourceNotFoundException;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -23,7 +25,7 @@ public class NotificationServiceImpl implements NotificationService {
     public List<NotificationResponse> getMyNotifications(String userEmail) {
 
         User user = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         return notificationRepository.findByUserOrderByCreatedAtDesc(user)
                 .stream()
@@ -35,10 +37,10 @@ public class NotificationServiceImpl implements NotificationService {
     public NotificationResponse markAsRead(Long id, String userEmail) {
 
         Notification notification = notificationRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Notification not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Notification not found"));
 
         if (!notification.getUser().getEmail().equals(userEmail)) {
-            throw new RuntimeException("Access denied");
+            throw new AccessDeniedException("Access denied");
         }
 
         notification.setRead(true);
@@ -52,10 +54,10 @@ public class NotificationServiceImpl implements NotificationService {
     public void deleteNotification(Long id, String userEmail) {
 
         Notification notification = notificationRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Notification not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Notification not found"));
 
         if (!notification.getUser().getEmail().equals(userEmail)) {
-            throw new RuntimeException("Access denied");
+            throw new AccessDeniedException("Access denied");
         }
 
         notificationRepository.delete(notification);

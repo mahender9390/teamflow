@@ -16,6 +16,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import com.teamflow.backend.exception.AccessDeniedException;
+import com.teamflow.backend.exception.InvalidRequestException;
+import com.teamflow.backend.exception.ResourceNotFoundException;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -34,21 +37,21 @@ public class TaskServiceImpl implements TaskService {
     public TaskResponse createTask(CreateTaskRequest request, String userEmail) {
 
         if (request.getDueDate().isBefore(LocalDate.now())) {
-            throw new RuntimeException("Due date must be today or in the future");
+            throw new InvalidRequestException("Due date must be today or in the future");
         }
 
         Project project = projectRepository.findById(request.getProjectId())
-                .orElseThrow(() -> new RuntimeException("Project not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Project not found"));
 
         if (!project.getCreatedBy().getEmail().equals(userEmail)) {
-            throw new RuntimeException("You can only create tasks in your own projects");
+            throw new AccessDeniedException("You can only create tasks in your own projects");
         }
 
         User assignedUser = userRepository.findById(request.getAssignedUserId())
-                .orElseThrow(() -> new RuntimeException("Assigned user not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Assigned user not found"));
 
         User loggedInUser = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         Task task = Task.builder()
                 .title(request.getTitle())
@@ -75,7 +78,7 @@ public class TaskServiceImpl implements TaskService {
     public List<TaskResponse> getTasksByProject(Long projectId) {
 
         Project project = projectRepository.findById(projectId)
-                .orElseThrow(() -> new RuntimeException("Project not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Project not found"));
 
         return taskRepository.findByProject(project)
                 .stream()
@@ -86,7 +89,7 @@ public class TaskServiceImpl implements TaskService {
     @Override
     public TaskResponse getTaskById(Long id) {
         Task task = taskRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Task not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Task not found"));
 
         return mapToResponse(task);
     }
@@ -95,21 +98,21 @@ public class TaskServiceImpl implements TaskService {
     public TaskResponse updateTask(Long id, UpdateTaskRequest request, String userEmail) {
 
         if (request.getDueDate().isBefore(LocalDate.now())) {
-            throw new RuntimeException("Due date must be today or in the future");
+            throw new InvalidRequestException("Due date must be today or in the future");
         }
 
         Task task = taskRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Task not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Task not found"));
 
         if (!task.getCreatedBy().getEmail().equals(userEmail)) {
-            throw new RuntimeException("Access denied");
+            throw new AccessDeniedException("Access denied");
         }
 
         Project project = projectRepository.findById(request.getProjectId())
-                .orElseThrow(() -> new RuntimeException("Project not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Project not found"));
 
         User assignedUser = userRepository.findById(request.getAssignedUserId())
-                .orElseThrow(() -> new RuntimeException("Assigned user not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Assigned user not found"));
 
         task.setTitle(request.getTitle());
         task.setDescription(request.getDescription());
@@ -134,10 +137,10 @@ public class TaskServiceImpl implements TaskService {
     public void deleteTask(Long id, String userEmail) {
 
         Task task = taskRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Task not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Task not found"));
 
         if (!task.getCreatedBy().getEmail().equals(userEmail)) {
-            throw new RuntimeException("Access denied");
+            throw new AccessDeniedException("Access denied");
         }
 
         taskRepository.delete(task);
@@ -166,7 +169,7 @@ public class TaskServiceImpl implements TaskService {
     public Page<TaskResponse> getTasksByAssignedUser(Long userId, Pageable pageable) {
 
         User user = userRepository.findById(userId)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         return taskRepository.findByAssignedTo(user, pageable)
                 .map(this::mapToResponse);

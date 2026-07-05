@@ -10,6 +10,9 @@ import com.teamflow.backend.repository.ProjectRepository;
 import com.teamflow.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import com.teamflow.backend.exception.AccessDeniedException;
+import com.teamflow.backend.exception.InvalidRequestException;
+import com.teamflow.backend.exception.ResourceNotFoundException;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -26,11 +29,11 @@ public class ProjectServiceImpl implements ProjectService {
     public ProjectResponse createProject(CreateProjectRequest request, String userEmail) {
 
         if (request.getEndDate().isBefore(request.getStartDate())) {
-            throw new IllegalArgumentException("End date cannot be before start date");
+            throw new InvalidRequestException("End date cannot be before start date");
         }
 
         User user = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         Project project = Project.builder()
                 .name(request.getName())
@@ -57,7 +60,7 @@ public class ProjectServiceImpl implements ProjectService {
     @Override
     public ProjectResponse getProjectById(Long id) {
         Project project = projectRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Project not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Project not found"));
 
         return mapToResponse(project);
     }
@@ -66,14 +69,14 @@ public class ProjectServiceImpl implements ProjectService {
     public ProjectResponse updateProject(Long id, UpdateProjectRequest request, String userEmail) {
 
         if (request.getEndDate().isBefore(request.getStartDate())) {
-            throw new IllegalArgumentException("End date cannot be before start date");
+            throw new InvalidRequestException("End date cannot be before start date");
         }
 
         Project project = projectRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Project not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Project not found"));
 
         if (!project.getCreatedBy().getEmail().equals(userEmail)) {
-            throw new RuntimeException("Access denied");
+            throw new AccessDeniedException("Access denied");
         }
 
         project.setName(request.getName());
@@ -97,10 +100,10 @@ public class ProjectServiceImpl implements ProjectService {
     public void deleteProject(Long id, String userEmail) {
 
         Project project = projectRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Project not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Project not found"));
 
         if (!project.getCreatedBy().getEmail().equals(userEmail)) {
-            throw new RuntimeException("Access denied");
+           throw new AccessDeniedException("Access denied");
         }
 
         projectRepository.delete(project);

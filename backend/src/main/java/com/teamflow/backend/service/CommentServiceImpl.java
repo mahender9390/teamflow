@@ -11,6 +11,8 @@ import com.teamflow.backend.repository.TaskRepository;
 import com.teamflow.backend.repository.UserRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
+import com.teamflow.backend.exception.AccessDeniedException;
+import com.teamflow.backend.exception.ResourceNotFoundException;
 
 import java.util.List;
 import java.util.stream.Collectors;
@@ -28,10 +30,10 @@ public class CommentServiceImpl implements CommentService {
     public CommentResponse createComment(CreateCommentRequest request, String userEmail) {
 
         Task task = taskRepository.findById(request.getTaskId())
-                .orElseThrow(() -> new RuntimeException("Task not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Task not found"));
 
         User user = userRepository.findByEmail(userEmail)
-                .orElseThrow(() -> new RuntimeException("User not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("User not found"));
 
         Comment comment = Comment.builder()
                 .comment(request.getComment())
@@ -59,7 +61,7 @@ public class CommentServiceImpl implements CommentService {
     public List<CommentResponse> getCommentsByTask(Long taskId) {
 
         Task task = taskRepository.findById(taskId)
-                .orElseThrow(() -> new RuntimeException("Task not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Task not found"));
 
         return commentRepository.findByTask(task)
                 .stream()
@@ -71,10 +73,10 @@ public class CommentServiceImpl implements CommentService {
     public void deleteComment(Long id, String userEmail) {
 
         Comment comment = commentRepository.findById(id)
-                .orElseThrow(() -> new RuntimeException("Comment not found"));
+                .orElseThrow(() -> new ResourceNotFoundException("Comment not found"));
 
         if (!comment.getUser().getEmail().equals(userEmail)) {
-            throw new RuntimeException("Access denied");
+            throw new AccessDeniedException("Access denied");
         }
 
         commentRepository.delete(comment);
