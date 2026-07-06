@@ -69,3 +69,43 @@ export const NOTIFICATION_TYPE_COLORS = {
   COMMENT_ADDED: "secondary",
   PROJECT_UPDATED: "warning",
 };
+
+export const RCA_SEVERITY = {
+  LOW: "LOW",
+  MEDIUM: "MEDIUM",
+  HIGH: "HIGH",
+  CRITICAL: "CRITICAL",
+};
+
+export const RCA_SEVERITY_COLORS = {
+  LOW: "secondary",
+  MEDIUM: "info",
+  HIGH: "warning",
+  CRITICAL: "danger",
+};
+
+export const RCA_STATUS = {
+  OPEN: "OPEN",
+  IN_PROGRESS: "IN_PROGRESS",
+  UNDER_REVIEW: "UNDER_REVIEW",
+  CLOSED: "CLOSED",
+};
+
+export const RCA_STATUS_COLORS = {
+  OPEN: "danger",
+  IN_PROGRESS: "primary",
+  UNDER_REVIEW: "warning",
+  CLOSED: "success",
+};
+
+export const REVIEW_STATUS = {
+  PENDING: "PENDING",
+  APPROVED: "APPROVED",
+  REJECTED: "REJECTED",
+};
+
+export const REVIEW_STATUS_COLORS = {
+  PENDING: "warning",
+  APPROVED: "success",
+  REJECTED: "danger",
+};

@@ -30,7 +30,6 @@ function App() {
               <Route path="/tasks" element={<Tasks />} />
               <Route path="/tasks/:id" element={<TaskDetail />} />
               <Route path="/notifications" element={<Notifications />} />
-              {/* Tasks, Comments, etc. added in next modules */}
             </Route>
           </Route>
         </Routes>

@@ -5,8 +5,6 @@ import {
   FaProjectDiagram,
   FaTasks,
   FaBell,
-  FaExclamationTriangle,
-  FaClipboardCheck,
 } from "react-icons/fa";
 
 const links = [
@@ -14,8 +12,6 @@ const links = [
   { to: "/projects", label: "Projects", icon: <FaProjectDiagram /> },
   { to: "/tasks", label: "Tasks", icon: <FaTasks /> },
   { to: "/notifications", label: "Notifications", icon: <FaBell /> },
-  { to: "/rca", label: "RCA", icon: <FaExclamationTriangle /> },
-  { to: "/reviews", label: "Reviews", icon: <FaClipboardCheck /> },
 ];
 
 const Sidebar = () => {
