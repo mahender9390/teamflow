@@ -31,3 +31,18 @@ build/
 
 ### VS Code ###
 .vscode/
+
+# Environment files
+.env
+.env.*
+!.env.example
+
+# Local Spring configuration
+application-local.properties
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Maven logs
+*.log
