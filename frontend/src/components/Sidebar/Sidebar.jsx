@@ -17,7 +17,7 @@ const links = [
 const Sidebar = () => {
   return (
     <div className="sidebar d-flex flex-column p-3" style={{ width: "240px" }}>
-      <h4 className="text-center mb-4">TeamFlow</h4>
+      <h4 className="text-center mb-4">TrackFlow</h4>
       <ul className="nav nav-pills flex-column gap-1">
         {links.map((link) => (
           <li className="nav-item" key={link.to}>
